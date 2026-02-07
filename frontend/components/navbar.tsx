@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useHydrateAuth } from '@/hooks/useHydrateAuth';
 import { Button } from './button';
 import { api, setAuthToken } from '@/services/api';
 import { CartModal } from './cart-modal';
+import { Category } from '@/types';
 
 export const Navbar = () => {
   const pathname = usePathname();
@@ -14,15 +16,15 @@ export const Navbar = () => {
   const logout = useAuthStore((s) => s.logout);
   useHydrateAuth();
   const isAdminSection = pathname.startsWith('/admin');
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const storeLinks = [
-    { href: '/', label: 'Boutique' },
-    { href: '/products', label: 'Catégories' },
-    { href: '/cart', label: 'Panier' },
-    { href: '/account', label: 'Compte' },
-  ];
-  const adminLinks = [{ href: '/account', label: 'Compte' }];
-  const navLinks = isAdminSection ? adminLinks : storeLinks;
+  useEffect(() => {
+    if (isAdminSection) return;
+    api
+      .get('/categories')
+      .then((res) => setCategories(res.data || []))
+      .catch(() => setCategories([]));
+  }, [isAdminSection]);
 
   const handleLogout = async () => {
     try {
@@ -43,18 +45,9 @@ export const Navbar = () => {
         <Link href={isAdminSection ? '/admin' : '/'} className="text-lg font-bold tracking-tight text-mint">
           Roofer Univers
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`rounded-lg px-3 py-2 hover:text-mint ${pathname === link.href ? 'text-mint' : 'text-slate-200'}`}
-            >
-              {link.label}
-            </Link>
-          ))}
+        <div className="flex items-center gap-3 text-sm">
           {user ? (
-            <div className="flex items-center gap-2">
+            <>
               <Link
                 href="/account"
                 className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-100 hover:border-mint hover:text-mint transition"
@@ -65,9 +58,9 @@ export const Navbar = () => {
               <Button variant="ghost" onClick={handleLogout} className="text-sm">
                 Déconnexion
               </Button>
-            </div>
+            </>
           ) : (
-            <div className="flex items-center gap-2">
+            <>
               <Link href="/login" className="text-slate-200 hover:text-mint">
                 Connexion
               </Link>
@@ -79,10 +72,29 @@ export const Navbar = () => {
                   </Link>
                 </>
               )}
-            </div>
+            </>
           )}
-        </nav>
+        </div>
       </div>
+      {!isAdminSection && (
+        <div className="border-t border-white/5 bg-[#0b1220]/85">
+          <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 py-2 text-sm">
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/products?category=${cat.slug}`}
+                className={`rounded-lg px-3 py-1 transition ${
+                  pathname.startsWith('/products') && pathname.includes(cat.slug)
+                    ? 'bg-mint text-slate-900'
+                    : 'text-slate-200 hover:bg-white/5 hover:text-mint'
+                }`}
+              >
+                {cat.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 };

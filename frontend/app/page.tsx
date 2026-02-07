@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { Product } from '@/types';
+import { cookies } from 'next/headers';
+import { Product, User } from '@/types';
 import { ProductCard } from '@/components/product-card';
-import { Sparkles, ShieldCheck, MailCheck, ArrowRight } from 'lucide-react';
+import { Sparkles, ShieldCheck, MailCheck, ArrowRight, HandHeart, CheckCircle2 } from 'lucide-react';
 
 async function getProducts(): Promise<Product[]> {
   try {
@@ -15,8 +16,24 @@ async function getProducts(): Promise<Product[]> {
   }
 }
 
+async function getCurrentUser(): Promise<User | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (!token) return null;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
 export default async function HomePage() {
-  const products = await getProducts();
+  const [products, user] = await Promise.all([getProducts(), getCurrentUser()]);
   const featured = products.slice(0, 6);
 
   return (
@@ -30,19 +47,37 @@ export default async function HomePage() {
               <Sparkles size={14} /> Outdoor premium
             </span>
             <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl">
-              Équipez votre van et vos aventures, sans paiement en ligne.
+              {user ? `Bienvenue ${user.name ?? 'client'}, prêts pour votre prochaine installation ?` : 'Équipez votre van et vos aventures, sans paiement en ligne.'}
             </h1>
             <p className="text-lg text-slate-200">
-              Vérification email obligatoire, commandes sécurisées et support humain. Une sélection prête à installer.
+              {user
+                ? 'Vos infos sont déjà prêtes, choisissez vos équipements et finalisez en un clic.'
+                : 'Vérification email obligatoire, commandes sécurisées et support humain. Une sélection prête à installer.'}
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/products" className="button-primary">
-                Découvrir le catalogue
+                {user ? 'Continuer mes achats' : 'Découvrir le catalogue'}
               </Link>
-              <Link href="/register" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-white transition hover:border-mint">
-                Créer mon compte <ArrowRight size={16} />
-              </Link>
+              {user ? (
+                <Link href="/account" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-white transition hover:border-mint">
+                  Mon compte <HandHeart size={16} />
+                </Link>
+              ) : (
+                <Link href="/register" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-white transition hover:border-mint">
+                  Créer mon compte <ArrowRight size={16} />
+                </Link>
+              )}
             </div>
+            {user && (
+              <div className="flex flex-wrap gap-3 text-sm text-slate-200">
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-400/10 px-3 py-1 text-emerald-200">
+                  <CheckCircle2 size={14} /> {user.emailVerified ? 'Email vérifié' : 'Email à vérifier'}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                  {user.email}
+                </span>
+              </div>
+            )}
             <div className="grid gap-3 sm:grid-cols-3 text-sm text-slate-200">
               {[{ icon: <MailCheck className="text-mint" size={16} />, title: 'Email first', desc: 'Validation obligatoire avant commande' },
                 { icon: <ShieldCheck className="text-cyan-300" size={16} />, title: 'Secure stack', desc: 'JWT, NestJS, Prisma + MySQL' },
