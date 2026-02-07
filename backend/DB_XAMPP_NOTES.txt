@@ -1,0 +1,13 @@
+# XAMPP / MySQL connexion rapide
+# 1) Lancer MySQL via XAMPP (port 3306).
+# 2) Créer les bases si besoin :
+#    CREATE DATABASE roofer_univers; CREATE DATABASE roofer_univers_shadow;
+# 3) Variables env déjà configurées dans backend/.env pour root sans mot de passe.
+# 4) Appliquer le schéma Prisma :
+#    cd backend && npx prisma migrate dev --name init
+# 5) Créer un admin :
+#    cd backend && npm run seed:admin
+#    (utilise ADMIN_EMAIL/ADMIN_PASSWORD si définis, sinon admin@roofer-univers.com / Admin@123)
+# 6) Lancer l'API :
+#    npm run start:dev
+# 7) Frontend : cd frontend && npm run dev

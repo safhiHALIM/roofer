@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,7 +30,12 @@ export default function LoginPage() {
       const res = await api.post('/auth/login', data);
       setAuth({ user: res.data.user, token: res.data.token });
       setAuthToken(res.data.token);
-      router.push('/account');
+      // redirect admins to admin panel, users to account
+      if (res.data.user.role === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/account');
+      }
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Connexion impossible');
     } finally {

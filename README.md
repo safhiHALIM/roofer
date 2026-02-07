@@ -35,3 +35,13 @@ Full-stack ecommerce starter with email-verification-first auth, NestJS + Prisma
 - JWT auth + EmailVerified guard required for cart, favorites, orders
 - Admin guard for admin routes
 - No payment gateways; checkout emails admin + client only.
+
+## Admin Panel (frontend)
+- URL: `http://localhost:3000/admin`
+- Admin login page: `http://localhost:3000/admin/login` (checks role = ADMIN)
+- Access: requires login as a user with `role = ADMIN` (JWT and `user_role` cookie set on login).
+- Middleware protection: `/admin/**` paths redirect to `/account` if not admin.
+- Features:
+  - Products: create, list (including inactive), toggle active, delete.
+  - Categories: create, list, delete.
+  - Orders: list all, update status.

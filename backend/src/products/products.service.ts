@@ -15,6 +15,13 @@ export class ProductsService {
     });
   }
 
+  listAll() {
+    return this.prisma.product.findMany({
+      include: { category: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   findBySlug(slug: string) {
     return this.prisma.product.findFirst({ where: { slug, isActive: true }, include: { category: true } });
   }

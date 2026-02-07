@@ -25,6 +25,11 @@ export class ProductsController {
 export class AdminProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  @Get()
+  listAll() {
+    return this.productsService.listAll();
+  }
+
   @Post()
   create(@Body() dto: CreateProductDto) {
     return this.productsService.create(dto);

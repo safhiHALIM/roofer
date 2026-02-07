@@ -25,6 +25,11 @@ export class CategoriesController {
 export class AdminCategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @Get()
+  list() {
+    return this.categoriesService.list();
+  }
+
   @Post()
   create(@Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(dto);
