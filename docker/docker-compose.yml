@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+  db:
+    image: mysql:8.0
+    container_name: roofer_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rooferroot
+      MYSQL_DATABASE: roofer_univers
+      MYSQL_USER: roofer
+      MYSQL_PASSWORD: rooferpass
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    build: ../backend
+    container_name: roofer_backend
+    restart: unless-stopped
+    env_file: ../backend/.env
+    environment:
+      DATABASE_URL: mysql://roofer:rooferpass@db:3306/roofer_univers
+      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: http://localhost:4000
+    ports:
+      - '4000:4000'
+    depends_on:
+      - db
+
+  frontend:
+    build: ../frontend
+    container_name: roofer_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:

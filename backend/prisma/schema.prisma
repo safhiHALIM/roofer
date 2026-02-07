@@ -1,0 +1,80 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String
+  name              String
+  phone             String?
+  role              Role     @default(USER)
+  emailVerified     Boolean  @default(false)
+  verificationToken String?
+  createdAt         DateTime @default(now())
+
+  favorites Favorite[]
+  cart      Cart?
+  orders    Order[]
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique
+  description String
+  categoryId  String
+  images      Json
+  price       Float
+  isActive    Boolean @default(true)
+
+  category  Category   @relation(fields: [categoryId], references: [id])
+  favorites Favorite[]
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String
+  slug     String    @unique
+  products Product[]
+}
+
+model Cart {
+  id     String @id @default(uuid())
+  userId String @unique
+  items  Json
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  userId    String
+  items     Json
+  total     Float
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Favorite {
+  userId    String
+  productId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@id([userId, productId])
+}
