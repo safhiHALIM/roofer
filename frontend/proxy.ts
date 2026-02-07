@@ -4,7 +4,8 @@ import type { NextRequest } from 'next/server';
 const protectedPaths = ['/account', '/cart', '/checkout'];
 const adminPaths = ['/admin'];
 
-export function middleware(request: NextRequest) {
+// Proxy (formerly middleware) keeps auth guards for sensitive routes
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
   const isAdminPath = adminPaths.some((path) => pathname.startsWith(path));

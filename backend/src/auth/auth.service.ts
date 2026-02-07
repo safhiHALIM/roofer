@@ -51,7 +51,12 @@ export class AuthService {
 
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { emailVerified: true, verificationToken: null },
+      data: {
+        emailVerified: true,
+        verificationToken: null,
+        email: user.pendingEmail || user.email,
+        pendingEmail: null,
+      },
     });
 
     return { message: 'Email verified successfully' };

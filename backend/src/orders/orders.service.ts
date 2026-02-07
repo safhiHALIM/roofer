@@ -33,6 +33,12 @@ export class OrdersService {
         userId,
         items: itemsWithPrices,
         total: computedTotal,
+        contactName: dto.contactName?.trim() || user.name || 'Client',
+        contactPhone: dto.contactPhone?.trim() || null,
+        contactAddress: dto.contactAddress?.trim() || null,
+        contactCity: dto.contactCity?.trim() || null,
+        contactZip: dto.contactZip?.trim() || null,
+        notes: dto.notes?.trim() || null,
       },
     });
 
@@ -41,6 +47,15 @@ export class OrdersService {
       orderId: order.id,
       items: itemsWithPrices,
       total: computedTotal,
+      contact: {
+        name: dto.contactName,
+        phone: dto.contactPhone,
+        address: dto.contactAddress,
+        city: dto.contactCity,
+        zip: dto.contactZip,
+        notes: dto.notes,
+        userEmail: user.email,
+      },
     });
 
     // clear cart silently

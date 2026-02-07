@@ -79,6 +79,20 @@ export default function AdminOrdersPage() {
                 <p>Aucun article</p>
               )}
             </div>
+            {(order.contactName || order.contactAddress || order.contactCity || order.contactZip || order.contactPhone || order.notes) && (
+              <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-slate-200">
+                <p className="font-semibold text-white">Contact</p>
+                {order.contactName && <p>Nom: {order.contactName}</p>}
+                {order.contactPhone && <p>Téléphone: {order.contactPhone}</p>}
+                {(order.contactAddress || order.contactCity || order.contactZip) && (
+                  <p>
+                    {order.contactAddress ? `${order.contactAddress}, ` : ''}
+                    {[order.contactZip, order.contactCity].filter(Boolean).join(' ')}
+                  </p>
+                )}
+                {order.notes && <p>Notes: {order.notes}</p>}
+              </div>
+            )}
           </div>
         ))}
       </div>

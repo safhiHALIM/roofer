@@ -15,7 +15,15 @@ export const ProductCard = ({ product }: { product: Product }) => (
       <ArrowUpRight size={16} className="text-slate-500 transition group-hover:text-mint" />
     </div>
 
-    <div className="mt-4 aspect-[4/3] overflow-hidden rounded-xl bg-gradient-to-br from-slate-800 to-slate-900" />
+    <div className="mt-4 aspect-[4/3] overflow-hidden rounded-xl bg-gradient-to-br from-slate-800 to-slate-900">
+      {product.images?.[0] ? (
+        <img
+          src={typeof product.images[0] === 'string' ? product.images[0] : ''}
+          alt={product.name}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
+      ) : null}
+    </div>
 
     <div className="mt-4 flex flex-1 flex-col justify-between gap-3">
       <div>

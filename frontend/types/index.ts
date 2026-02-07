@@ -42,4 +42,10 @@ export interface Order {
   total: number;
   status: string;
   createdAt?: string;
+  contactName?: string;
+  contactPhone?: string | null;
+  contactAddress?: string | null;
+  contactCity?: string | null;
+  contactZip?: string | null;
+  notes?: string | null;
 }

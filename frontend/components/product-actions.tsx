@@ -29,6 +29,7 @@ export const AddToCartButton = ({ product }: { product: Product }) => {
         quantity: 1,
         price: product.price,
         name: product.name,
+        image: product.images?.[0],
       });
       router.push('/cart');
     } catch (err) {

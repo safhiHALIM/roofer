@@ -17,9 +17,13 @@ CREATE TABLE IF NOT EXISTS `User` (
   `role` ENUM('USER','ADMIN') NOT NULL DEFAULT 'USER',
   `emailVerified` TINYINT(1) NOT NULL DEFAULT 0,
   `verificationToken` VARCHAR(191),
+  `pendingEmail` VARCHAR(191),
   `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
+
+-- If the column was missing on an existing install, uncomment the line below (MySQL 8+ supports IF NOT EXISTS)
+-- ALTER TABLE `User` ADD COLUMN IF NOT EXISTS `pendingEmail` VARCHAR(191) NULL;
 
 CREATE TABLE IF NOT EXISTS `Category` (
   `id` CHAR(36) NOT NULL DEFAULT (uuid()),
@@ -56,11 +60,25 @@ CREATE TABLE IF NOT EXISTS `Order` (
   `items` JSON NOT NULL,
   `total` DECIMAL(10,2) NOT NULL,
   `status` VARCHAR(50) NOT NULL DEFAULT 'pending',
+  `contactName` VARCHAR(191) NOT NULL DEFAULT 'Client',
+  `contactPhone` VARCHAR(50),
+  `contactAddress` VARCHAR(191),
+  `contactCity` VARCHAR(191),
+  `contactZip` VARCHAR(20),
+  `notes` TEXT,
   `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_order_user` (`userId`),
   CONSTRAINT `fk_order_user` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- If updating an existing database, run:
+-- ALTER TABLE `Order` ADD COLUMN IF NOT EXISTS `contactName` VARCHAR(191) NOT NULL DEFAULT '';
+-- ALTER TABLE `Order` ADD COLUMN IF NOT EXISTS `contactPhone` VARCHAR(50) NULL;
+-- ALTER TABLE `Order` ADD COLUMN IF NOT EXISTS `contactAddress` VARCHAR(191) NULL;
+-- ALTER TABLE `Order` ADD COLUMN IF NOT EXISTS `contactCity` VARCHAR(191) NULL;
+-- ALTER TABLE `Order` ADD COLUMN IF NOT EXISTS `contactZip` VARCHAR(20) NULL;
+-- ALTER TABLE `Order` ADD COLUMN IF NOT EXISTS `notes` TEXT NULL;
 
 CREATE TABLE IF NOT EXISTS `Favorite` (
   `userId` CHAR(36) NOT NULL,
@@ -86,4 +104,3 @@ ON DUPLICATE KEY UPDATE role='ADMIN', emailVerified=1;
 -- backend/.env ->
 -- DATABASE_URL="mysql://root:@localhost:3306/roofer_univers"
 -- SHADOW_DATABASE_URL="mysql://root:@localhost:3306/roofer_univers_shadow"
-

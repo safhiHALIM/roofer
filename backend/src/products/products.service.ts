@@ -7,9 +7,18 @@ import { UpdateProductDto } from './dto/update-product.dto';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  list() {
+  list(categorySlug?: string) {
     return this.prisma.product.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        ...(categorySlug
+          ? {
+              category: {
+                slug: categorySlug,
+              },
+            }
+          : {}),
+      },
       include: { category: true },
       orderBy: { name: 'asc' },
     });

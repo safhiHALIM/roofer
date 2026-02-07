@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 const cards = [
+  { title: 'Utilisateurs', desc: 'Rôles, vérification email, infos', href: '/admin/users' },
   { title: 'Produits', desc: 'Créer, activer/désactiver, modifier, supprimer', href: '/admin/products' },
   { title: 'Catégories', desc: 'Organiser les gammes et slugs', href: '/admin/categories' },
   { title: 'Commandes', desc: 'Suivre et changer le statut', href: '/admin/orders' },

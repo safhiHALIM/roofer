@@ -22,6 +22,7 @@ model User {
   role              Role     @default(USER)
   emailVerified     Boolean  @default(false)
   verificationToken String?
+  pendingEmail      String?
   createdAt         DateTime @default(now())
 
   favorites Favorite[]
@@ -64,6 +65,12 @@ model Order {
   items     Json
   total     Float
   status    String   @default("pending")
+  contactName  String   @default("Client")
+  contactPhone String?
+  contactAddress String?
+  contactCity String?
+  contactZip String?
+  notes      String?
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])

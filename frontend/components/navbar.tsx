@@ -55,7 +55,12 @@ export const Navbar = () => {
           ))}
           {user ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-300">{user.email}</span>
+              <Link
+                href="/account"
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-100 hover:border-mint hover:text-mint transition"
+              >
+                {user.email}
+              </Link>
               {!isAdminSection && <CartModal />}
               <Button variant="ghost" onClick={handleLogout} className="text-sm">
                 Déconnexion

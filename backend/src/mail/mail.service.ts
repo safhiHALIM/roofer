@@ -55,7 +55,21 @@ export class MailService {
     }
   }
 
-  async sendOrderEmails(payload: { userEmail: string; orderId: string; items: any; total: number }) {
+  async sendOrderEmails(payload: {
+    userEmail: string;
+    orderId: string;
+    items: any;
+    total: number;
+    contact?: {
+      name?: string;
+      phone?: string;
+      address?: string;
+      city?: string;
+      zip?: string;
+      notes?: string;
+      userEmail?: string;
+    };
+  }) {
     const adminEmail = this.from;
     const html = this.buildOrderTemplate(payload);
     const sends = await Promise.all([
@@ -91,25 +105,70 @@ export class MailService {
     `;
   }
 
-  private buildOrderTemplate(payload: { userEmail: string; orderId: string; items: any; total: number }) {
+  private buildOrderTemplate(payload: {
+    userEmail: string;
+    orderId: string;
+    items: any;
+    total: number;
+    contact?: {
+      name?: string;
+      phone?: string;
+      address?: string;
+      city?: string;
+      zip?: string;
+      notes?: string;
+      userEmail?: string;
+    };
+  }) {
     const itemsList = Array.isArray(payload.items)
       ? payload.items
-          .map((item: any) => `
-            <tr>
-              <td style="padding:8px 12px; border-bottom:1px solid #eee;">${item.name || item.productId}</td>
-              <td style="padding:8px 12px; border-bottom:1px solid #eee; text-align:center;">${item.quantity || 1}</td>
-              <td style="padding:8px 12px; border-bottom:1px solid #eee; text-align:right;">${item.price ? item.price.toFixed(2) : ''} €</td>
-            </tr>
-          `)
+          .map((item: any) => {
+            const qty = item.quantity || 1;
+            const unit = item.price ? item.price.toFixed(2) : '';
+            const lineTotal = item.price ? (item.price * qty).toFixed(2) : '';
+            return `
+              <tr>
+                <td style="padding:8px 12px; border-bottom:1px solid #eee;">${item.name || item.productId}</td>
+                <td style="padding:8px 12px; border-bottom:1px solid #eee; text-align:center;">${qty}</td>
+                <td style="padding:8px 12px; border-bottom:1px solid #eee; text-align:right;">${unit} €</td>
+                <td style="padding:8px 12px; border-bottom:1px solid #eee; text-align:right; font-weight:700;">${lineTotal} €</td>
+              </tr>
+            `;
+          })
           .join('')
+      : '';
+
+    const contact = payload.contact
+      ? `
+        <div style="margin-top:16px; padding:12px; background:#e2e8f0; border-radius:8px;">
+          <p style="margin:0 0 6px 0; font-weight:700;">Coordonnées :</p>
+          ${payload.contact.name ? `<p style="margin:2px 0;">Nom: ${payload.contact.name}</p>` : ''}
+          ${payload.contact.userEmail ? `<p style="margin:2px 0;">Email: ${payload.contact.userEmail}</p>` : ''}
+          ${payload.contact.phone ? `<p style="margin:2px 0;">Téléphone: ${payload.contact.phone}</p>` : ''}
+          ${payload.contact.address ? `<p style="margin:2px 0;">Adresse: ${payload.contact.address}</p>` : ''}
+          ${payload.contact.city || payload.contact.zip ? `<p style="margin:2px 0;">${payload.contact.zip || ''} ${payload.contact.city || ''}</p>` : ''}
+          ${payload.contact.notes ? `<p style="margin:2px 0;">Notes: ${payload.contact.notes}</p>` : ''}
+        </div>
+      `
       : '';
 
     return `
       <div style="font-family: Arial, sans-serif; padding:24px; background:#f8fafc; color:#0f172a;">
         <h2 style="margin-top:0;">Merci pour votre commande</h2>
         <p>Commande #${payload.orderId}</p>
-        <table style="width:100%; border-collapse:collapse; margin-top:12px;">${itemsList}</table>
+        <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+          <thead>
+            <tr style="background:#e2e8f0; color:#0f172a;">
+              <th style="padding:8px 12px; text-align:left;">Produit</th>
+              <th style="padding:8px 12px; text-align:center;">Qté</th>
+              <th style="padding:8px 12px; text-align:right;">Prix unitaire</th>
+              <th style="padding:8px 12px; text-align:right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>${itemsList}</tbody>
+        </table>
         <p style="font-weight:700; margin-top:12px;">Total: ${payload.total.toFixed(2)} €</p>
+        ${contact}
         <p style="font-size:12px; color:#475569;">Une copie a été envoyée à l'administrateur.</p>
       </div>
     `;

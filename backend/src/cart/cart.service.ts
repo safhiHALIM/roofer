@@ -19,7 +19,11 @@ export class CartService {
     const cart = await this.prisma.cart.findUnique({ where: { userId } });
     const items = Array.isArray(cart?.items) ? [...(cart?.items as any[])] : [];
     const index = items.findIndex((item) => item.productId === dto.productId);
-    const payload = { ...dto, price: product.price, name: product.name };
+    const firstImage =
+      Array.isArray(product.images) && product.images.length > 0
+        ? (product.images as any[])[0]
+        : null;
+    const payload = { ...dto, price: product.price, name: product.name, image: dto.image ?? firstImage ?? null };
     if (index >= 0) {
       items[index] = { ...items[index], quantity: items[index].quantity + dto.quantity, price: product.price, name: product.name };
     } else {

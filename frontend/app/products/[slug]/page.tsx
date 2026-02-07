@@ -18,14 +18,31 @@ async function fetchProduct(slug: string): Promise<Product | null> {
   }
 }
 
-export default async function ProductDetail({ params }: { params: { slug: string } }) {
-  const product = await fetchProduct(params.slug);
+export default async function ProductDetail({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await fetchProduct(slug);
   if (!product) return notFound();
 
   return (
     <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr]">
-      <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-[0_22px_70px_rgba(0,0,0,0.28)]">
-        <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900" />
+      <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-[0_22px_70px_rgba(0,0,0,0.28)] space-y-3">
+        <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900">
+          {product.images?.[0] ? (
+            <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+          ) : null}
+        </div>
+        {product.images?.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {product.images.slice(1).map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`${product.name} ${idx + 2}`}
+                className="h-16 w-16 shrink-0 rounded-lg object-cover border border-white/10"
+              />
+            ))}
+          </div>
+        )}
       </div>
       <div className="space-y-6">
         <div className="space-y-2">
@@ -35,7 +52,7 @@ export default async function ProductDetail({ params }: { params: { slug: string
         </div>
         <p className="text-3xl font-semibold text-mint">{product.price.toFixed(2)} €</p>
         <div className="flex flex-wrap gap-3">
-          <AddToCartButton product={product} />
+          <AddToCartButton product={{ ...product, images: product.images }} />
           <div className="rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200">Livraison rapide</div>
         </div>
         <div className="grid gap-3 rounded-2xl border border-white/10 bg-slate-900/50 p-4 text-sm text-slate-300 md:grid-cols-3">

@@ -12,6 +12,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState({ name: '', description: '', price: '', categoryId: '', imageUrl: '' });
+  const [localImages, setLocalImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -55,12 +56,19 @@ export default function AdminProductsPage() {
         description: form.description,
         price: Number(form.price),
         categoryId: form.categoryId,
-        images: form.imageUrl
-          ? [form.imageUrl]
+        images: [
+          ...localImages,
+          ...(form.imageUrl ? [form.imageUrl] : []),
+        ].filter(Boolean).length
+          ? [
+              ...localImages,
+              ...(form.imageUrl ? [form.imageUrl] : []),
+            ]
           : ['https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80'],
       });
       setProducts((p) => [res.data, ...p]);
       resetForm();
+      setLocalImages([]);
       setMessage('Produit créé');
     } catch (err: any) {
       setMessage(err?.response?.data?.message || 'Erreur création');
@@ -120,7 +128,61 @@ export default function AdminProductsPage() {
             value={form.imageUrl}
             onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
           />
+          <label className="space-y-2 text-sm text-slate-200">
+            <span>Importer des images (ordinateur)</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="w-full rounded-lg border border-white/10 bg-slate-800 px-3 py-2 text-sm text-white"
+              onChange={(e) => {
+                const files = e.target.files;
+                if (!files || files.length === 0) {
+                  setLocalImages([]);
+                  return;
+                }
+                const readers: Promise<string | null>[] = Array.from(files).map(
+                  (file) =>
+                    new Promise((resolve) => {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        resolve(typeof reader.result === 'string' ? reader.result : null);
+                      };
+                      reader.readAsDataURL(file);
+                    }),
+                );
+                Promise.all(readers).then((imgs) => setLocalImages(imgs.filter((i): i is string => Boolean(i))));
+              }}
+            />
+            <p className="text-xs text-slate-400">Toutes les images importées seront ajoutées au produit.</p>
+          </label>
         </div>
+        {localImages.length > 0 && (
+          <div className="mt-3 space-y-2 rounded-xl border border-white/10 bg-white/5 p-3">
+            <p className="text-sm text-slate-200">Prévisualisations ({localImages.length})</p>
+            <div className="flex flex-wrap gap-3">
+              {localImages.map((img, idx) => (
+                <div key={idx} className="relative">
+                  <img src={img} alt={`Prévisualisation ${idx + 1}`} className="h-20 w-20 rounded-lg object-cover border border-white/10" />
+                  <button
+                    type="button"
+                    className="absolute -top-2 -right-2 rounded-full bg-black/70 px-2 py-1 text-[10px] text-white"
+                    onClick={() => setLocalImages((arr) => arr.filter((_, i) => i !== idx))}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="text-xs text-mint hover:underline"
+              onClick={() => setLocalImages([])}
+            >
+              Retirer toutes les images
+            </button>
+          </div>
+        )}
         <div className="mt-3 flex items-center gap-3">
           <Button onClick={handleCreate} disabled={loading}>
             {loading ? '...' : 'Créer'}
